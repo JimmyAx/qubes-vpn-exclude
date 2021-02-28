@@ -1,0 +1,44 @@
+#!/bin/bash
+
+set -e
+
+if [ -e /var/run/qubes/this-is-templatevm ] || \
+    [ ! -e /var/run/qubes-service/vpn-exclude-domains ]; then
+    exit 0
+fi
+
+iptables -I FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+ip6tables -I FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+
+# Open to external DNS server for this VM
+iptables -I OUTPUT -o eth0 -m tcp -p tcp --dport 53 -j ACCEPT
+iptables -I OUTPUT -o eth0 -m udp -p udp --dport 53 -j ACCEPT
+
+# Force proxied VMs to query local dnsmasq
+iptables -t nat -I PREROUTING -i vif+ -p tcp --dport 53 -j DNAT --to-destination 127.0.0.1
+iptables -t nat -I PREROUTING -i vif+ -p udp --dport 53 -j DNAT --to-destination 127.0.0.1
+
+# Allow local DNS service to accept requests and send replies.
+iptables -I INPUT -i vif+ -p tcp --dport 53 -d 127.0.0.1 -j ACCEPT
+iptables -I INPUT -i vif+ -p udp --dport 53 -d 127.0.0.1 -j ACCEPT
+iptables -I OUTPUT -o vif+ -p udp --sport 53 -s 127.0.0.1 -j ACCEPT
+
+# This script is executed before dnsmasq goes up so we need to create ipsets here.
+# If they exists it's fine.
+ipset create qubes-vpn-exclude-4 hash:ip &> /dev/null || true
+ipset create qubes-vpn-exclude-6 hash:ip family inet6 &> /dev/null || true
+
+# Allow proxied VMs to make external HTTP and HTTPS requests for excluded domains
+iptables -I FORWARD -o eth0 -p tcp -m tcp --dport 80 -m set --match-set qubes-vpn-exclude-4 dst -j ACCEPT
+iptables -I FORWARD -o eth0 -p tcp -m tcp --dport 443 -m set --match-set qubes-vpn-exclude-4 dst -j ACCEPT
+ip6tables -I FORWARD -o eth0 -p tcp -m tcp --dport 80 -m set --match-set qubes-vpn-exclude-6 dst -j ACCEPT
+ip6tables -I FORWARD -o eth0 -p tcp -m tcp --dport 443 -m set --match-set qubes-vpn-exclude-6 dst -j ACCEPT
+
+# Allow the ProxyVM to connect too.
+iptables -I OUTPUT -o eth0 -m tcp -p tcp --dport 80 -m set --match-set qubes-vpn-exclude-4 dst -j ACCEPT
+iptables -I OUTPUT -o eth0 -m tcp -p tcp --dport 443 -m set --match-set qubes-vpn-exclude-4 dst -j ACCEPT
+ip6tables -I OUTPUT -o eth0 -m tcp -p tcp --dport 80 -m set --match-set qubes-vpn-exclude-6 dst -j ACCEPT
+ip6tables -I OUTPUT -o eth0 -m tcp -p tcp --dport 443 -m set --match-set qubes-vpn-exclude-6 dst -j ACCEPT
+
+sysctl -q -w net.ipv4.conf.all.route_localnet=1 net.ipv4.conf.default.route_localnet=1 net.ipv4.conf.eth0.route_localnet=0
+sysctl -q -w net.ipv6.conf.all.forwarding=1

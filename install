@@ -1,0 +1,14 @@
+#!/bin/bash
+
+set -e
+
+if ! [ $(id -u) -eq 0 ]; then
+  echo "root required" >&2
+  exit 1
+fi
+
+mkdir /rw/config/qubes-vpn-exclude
+cp -a *.d generate-dnsmasq.sh rc.local-hook /rw/config/qubes-vpn-exclude
+
+chmod +x /rw/config/qubes-vpn-exclude/generate-dnsmasq.sh
+chmod +x /rw/config/qubes-vpn-exclude/qubes-firewall.d/95-qubes-vpn-exclude

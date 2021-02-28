@@ -1,0 +1,20 @@
+#!/bin/bash
+
+set -e
+
+cd /rw/config/qubes-vpn-exclude
+
+mkdir -p /lib/systemd/system/dnsmasq.service.d
+cp dnsmasq.service.d/* /lib/systemd/system/dnsmasq.service.d
+
+mkdir -p /lib/systemd/system/qubes-firewall.service.d
+cp qubes-firewall.service.d/* /lib/systemd/system/qubes-firewall.service.d
+
+ln -s -f $PWD/qubes-firewall.d/95-qubes-vpn-exclude /rw/config/qubes-firewall.d/95-qubes-vpn-exclude
+chmod +x /rw/config/qubes-firewall.d/*
+
+systemctl daemon-reload
+systemctl enable dnsmasq.service
+systemctl restart qubes-firewall.service
+
+sync
