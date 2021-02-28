@@ -17,7 +17,7 @@ VPN.
 
 ## Installation and configuration
 
- 1. Enable qubes-vpn-handler in the ProxyVM by adding `vpn-exclude-domains` to
+ 1. Enable qubes-vpn-exclude in the ProxyVM by adding `vpn-exclude-domains` to
     the services tab in Qube Manager.
 
  2. Copy the `qubes-vpn-exclude` folder to the ProxyVM.
