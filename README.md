@@ -47,7 +47,7 @@ qubes-vpn-exclude is implemented using iptables, ipsets and dnsmasq.
 
 Upon startup of the ProxyVM iptable rules are added to exclude the ipsets
 `qubes-vpn-exclude-4` (for IPv4) and `qubes-vpn-exclude-6` (for IPv6) from the
-forced VPN tunnel. By default these ipsets are empty and therefore no domans
+forced VPN tunnel. By default these ipsets are empty and therefore no domains
 are excluded from the VPN tunnel.
 
 When a DNS request is performed from an AppVM the ProxyVM will force redirect 
