@@ -13,10 +13,13 @@ ip6tables -I FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
 # Open to external DNS server for this VM
 iptables -I OUTPUT -o eth0 -m tcp -p tcp --dport 53 -j ACCEPT
 iptables -I OUTPUT -o eth0 -m udp -p udp --dport 53 -j ACCEPT
+
+# Open to VPN DNS server for this VM
 iptables -I OUTPUT -o tun0 -m tcp -p tcp --dport 53 -j ACCEPT
 iptables -I OUTPUT -o tun0 -m udp -p udp --dport 53 -j ACCEPT
+iptables -I INPUT -i tun0 -p udp --dport 53 -d 127.0.0.1 -j ACCEPT
 
-# Force proxied VMs to query local dnsmasq
+# Force proxied VMs to query local DNS server
 iptables -t nat -I PREROUTING -i vif+ -p tcp --dport 53 -j DNAT --to-destination 127.0.0.1
 iptables -t nat -I PREROUTING -i vif+ -p udp --dport 53 -j DNAT --to-destination 127.0.0.1
 
@@ -24,7 +27,6 @@ iptables -t nat -I PREROUTING -i vif+ -p udp --dport 53 -j DNAT --to-destination
 iptables -I INPUT -i vif+ -p tcp --dport 53 -d 127.0.0.1 -j ACCEPT
 iptables -I INPUT -i vif+ -p udp --dport 53 -d 127.0.0.1 -j ACCEPT
 iptables -I OUTPUT -o vif+ -p udp --sport 53 -s 127.0.0.1 -j ACCEPT
-iptables -I INPUT -i tun0 -p udp --dport 53 -d 127.0.0.1 -j ACCEPT
 
 # This script is executed before dnsmasq goes up so we need to create ipsets here.
 # If they exists it's fine.
