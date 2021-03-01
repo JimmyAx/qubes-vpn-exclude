@@ -53,10 +53,11 @@ are excluded from the VPN tunnel.
 When a DNS request is performed from an AppVM the ProxyVM will force redirect 
 them to the local DNS server provided by dnsmasq. If the domain matches the 
 list of excluded domains dnsmasq will use the local Qubes DNS server to resolve 
-them. The IPs for the domain will then be added to either the `qubes-vpn-exclude-4` or `qubes-vpn-exclude-6` ipsets.
+them. The IPs for the domain will then be added to either the
+`qubes-vpn-exclude-4` or `qubes-vpn-exclude-6` ipsets.
 
 Any domain not matching the exclude list will be forwarded to the DNS in the 
 VPN.
 
-qubes-vpn-exclude has been tested on Fedora 30 but should work with any
+qubes-vpn-exclude has been tested with Fedora 30 but should work with any
 Linux-based ProxyVM supported by Qubes OS.
