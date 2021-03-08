@@ -1,10 +1,11 @@
 # qubes-vpn-exclude
 
 Hooks for [Qubes-vpn-support](https://github.com/tasket/Qubes-vpn-support) to
-exclude specific hosts from the VPN tunnel. Useful for when the VPN network
-won't forward requests to the public internet as this configuration allows
-AppVMs behind a VPN ProxyVM to directly connect to the internet instead of
-going through the VPN.
+exclude specific hosts from the VPN tunnel (implementing [inverse split 
+tunneling](https://en.wikipedia.org/wiki/Split_tunneling)). Useful for
+when the VPN network won't forward requests to the public internet as this
+configuration allows AppVMs behind a VPN ProxyVM to directly connect to the
+internet instead of going through the VPN.
 
 Only requests over HTTP (port 80) and HTTPS (port 443) are excluded from the
 VPN.
